@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Signal Operations Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fraunces:opsz,wght@9..144,600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one narrow lab-sheet column; questions as numbered panels; a slim sticky timer bar during the attempt */
+:root{
+  --bg:#f5f7f6; --paper:#ffffff; --ink:#17201d; --muted:#5b6a64; --line:#d5dfdb;
+  --signal:#0f6e66; --signal-soft:#e2f1ef; --warn:#b5541b; --ok:#2c7a3f; --bad:#b3261e; --grid:#e7eeeb;
+  --display:"Fraunces",Georgia,serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1513; --paper:#161e1b; --ink:#e4ece9; --muted:#9aaba4; --line:#2a3632;
+  --signal:#4fc3b6; --signal-soft:#17312d; --warn:#e39a62; --ok:#6cc488; --bad:#f08a80; --grid:#202a27; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1513; --paper:#161e1b; --ink:#e4ece9; --muted:#9aaba4; --line:#2a3632;
+  --signal:#4fc3b6; --signal-soft:#17312d; --warn:#e39a62; --ok:#6cc488; --bad:#f08a80; --grid:#202a27; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
+h1,h2{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:1.9rem} h2{font-size:1.25rem}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--signal)}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:12px;min-width:0}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+.rules{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.ar{direction:rtl;text-align:right;font-family:Tahoma,"Segoe UI",Arial,sans-serif;line-height:1.8;margin-top:14px;padding-top:12px;border-top:1px solid var(--line, #ddd)}
+.ar .rules{padding-left:0;padding-right:1.4em}
+.ar .math{direction:ltr;unicode-bidi:isolate}
+label{font-weight:700;font-size:.92rem}
+input[type=text],input[type=email],textarea{font:inherit;font-family:var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;box-sizing:border-box}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+.field{display:grid;gap:4px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.row>.field{flex:1 1 180px;min-width:0}
+button{font:inherit;font-weight:700;border-radius:6px;padding:10px 16px;border:1px solid var(--signal);background:var(--signal);color:var(--paper);cursor:pointer}
+button.ghost{background:transparent;color:var(--signal)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.math{font-family:var(--mono);white-space:nowrap}
+.qhead{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.qnum{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.marks{font-family:var(--mono);font-size:.8rem;color:var(--signal);background:var(--signal-soft);padding:2px 8px;border-radius:99px}
+.blanks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.blank{display:grid;gap:4px}
+.blank span{font-family:var(--mono);font-size:.85rem}
+.cells{overflow-x:auto}
+.cells table{border-collapse:collapse;font-family:var(--mono);font-size:.9rem}
+.cells th,.cells td{border:1px solid var(--line);padding:4px;text-align:center;min-width:56px}
+.cells th{background:var(--signal-soft);font-weight:600}
+.cells input{width:56px;text-align:center;padding:6px 4px}
+svg.plot{width:100%;max-width:520px;height:auto;display:block}
+svg .ax{stroke:var(--muted);stroke-width:1}
+svg .gr{stroke:var(--grid);stroke-width:1}
+svg .sig{stroke:var(--signal);stroke-width:2.6;fill:none}
+svg .sig2{stroke:var(--warn);stroke-width:2.6;fill:none}
+svg .dot{fill:var(--signal)}
+svg text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+svg text.lab{fill:var(--ink);font-size:12px}
+.timer{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.clock{font-family:var(--mono);font-size:1.3rem;font-weight:600;font-variant-numeric:tabular-nums}
+.clock.low{color:var(--bad)}
+.hint{font-size:.85rem;color:var(--muted)}
+.code{font-family:var(--mono);font-size:.8rem;word-break:break-all;background:var(--bg);border:1px dashed var(--signal);border-radius:6px;padding:10px}
+.ok{color:var(--ok)} .bad{color:var(--bad)}
+.key{font-family:var(--mono);color:var(--ok);font-weight:600}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button[aria-pressed=false]{background:transparent;color:var(--signal)}
+.gtable{overflow-x:auto}
+.gtable table{border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums;width:100%}
+.gtable th,.gtable td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;white-space:nowrap}
+.gtable th{font-family:var(--mono);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.flag{color:var(--warn);font-weight:700}
+.btnlink{font-weight:700;border-radius:6px;padding:10px 16px;border:1px solid var(--signal);color:var(--signal);text-decoration:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app">
+  <header class="panel" style="background:transparent;border:0;padding:0">
+    <div class="eyebrow">Signals &amp; Systems · Lecture 1</div>
+    <h1>Signal Operations Quiz</h1>
+    <p class="muted">Time shift, reversal, scaling, amplitude operations, periodicity, even/odd parts. 5 questions · 5 marks · 15 minutes.</p>
+  </header>
+
+  
+
+  <section id="start" class="panel">
+    <h2>Before you start · قبل ما تبدأ</h2>
+    <p class="small"><b>Read all the instructions first. The 15 minutes start only when you press “Start quiz”.</b></p>
+    <ol class="rules small">
+      <li><b>Time:</b> the quiz is open on <b>Monday 2 November, 9:00 to 9:15 pm</b> (Cairo time). It ends at <b>9:15 pm for everyone</b>, so starting late means less time. It submits itself at 9:15.</li>
+      <li><b>Get ready before you start:</b> paper, a pen, and a scanner app on your phone (Google Drive → + → Scan, Adobe Scan or CamScanner).</li>
+      <li><b>Your email:</b> type <b>your own email</b>, and use the <b>same email</b> in the upload form. Your numbers are generated from it, so every student gets <b>different numbers</b>; copying a friend's answers will not work. Your score is sent to this email.</li>
+      <li><b>Do not close or refresh this page.</b> If you do, the quiz ends and only what you had typed is submitted. Leaving this tab (switching apps or tabs) is recorded and reported to your TA.</li>
+      <li><b>Solve on paper</b> with all steps and sketches. Write your <b>full name and email</b> at the top of the first page and label your answers <b>Q1</b> to <b>Q5</b>. Then type the final answers in the boxes.</li>
+      <li><b>Answer format:</b> whole numbers, decimals or fractions: <span class="math">3</span>, <span class="math">-1.5</span>, <span class="math">-3/2</span>. Where π appears, type <span class="math">pi</span>, e.g. <span class="math">2pi/3</span>. Type 0 where the value is zero.</li>
+      <li><b>After you submit:</b> copy your <b>submission code</b>, scan your paper into <b>one PDF</b>, and upload the PDF together with the code in the form <b>within 5 minutes, by 9:20 pm</b>. Late uploads are not accepted.</li>
+      <li><b>The PDF must be:</b> one file under 10 MB (scanned, not plain photos), readable, with nothing cut off, and named with your email, e.g. <span class="math">ali.hassan@gmail.com.pdf</span>.</li>
+      <li>Without <b>both</b> the code and the PDF, your attempt is not counted. Answers typed in the quiz that do not match your written working may lose marks.</li>
+    </ol>
+    <div class="ar small" dir="rtl" lang="ar">
+      <p><b>اقرأ كل التعليمات الأول. الـ 15 دقيقة مش هتبدأ غير لما تدوس “Start quiz”.</b></p>
+      <ol class="rules">
+        <li><b>الوقت:</b> الكويز مفتوح <b>يوم الاتنين 2 نوفمبر من 9:00 لـ 9:15 مساءً</b> (بتوقيت القاهرة). بيخلص <b>9:15 للكل</b>، يعني لو بدأت متأخر هيبقى وقتك أقل. وبيتسلّم لوحده الساعة 9:15.</li>
+        <li><b>جهّز قبل ما تبدأ:</b> ورق وقلم، وأبلكيشن سكانر على موبايلك (Google Drive ← + ← Scan، أو Adobe Scan، أو CamScanner).</li>
+        <li><b>الإيميل:</b> اكتب <b>إيميلك انت</b>، واستخدم <b>نفس الإيميل</b> في فورم الرفع. الأرقام بتتعمل من الإيميل ده، فكل طالب أسئلته <b>بأرقام مختلفة</b>، والنقل من صاحبك مش هينفع. والدرجة هتوصلك على نفس الإيميل.</li>
+        <li><b>متقفلش الصفحة ومتعملش refresh.</b> لو عملت كده الكويز هيخلص ويتسلّم اللي كنت كتبته بس. ولو خرجت من التاب (لأبلكيشن أو تاب تاني) ده بيتسجّل ويوصل للمعيد.</li>
+        <li><b>حل على الورق</b> بكل الخطوات والرسومات. اكتب <b>اسمك بالكامل وإيميلك</b> في أول الصفحة الأولى، ورقّم إجاباتك من <b>Q1</b> لـ <b>Q5</b>. وبعدين اكتب الإجابات النهائية في الخانات.</li>
+        <li><b>شكل الإجابة:</b> أرقام صحيحة أو عشرية أو كسور، زي <span class="math">3</span> أو <span class="math">-1.5</span> أو <span class="math">-3/2</span>. ولو فيه π اكتب <span class="math">pi</span>، مثلاً <span class="math">2pi/3</span>. واكتب 0 لو القيمة صفر.</li>
+        <li><b>بعد ما تسلّم:</b> انسخ <b>الكود (submission code)</b>، واعمل سكان للورق في <b>ملف PDF واحد</b>، وارفع الـ PDF مع الكود في الفورم <b>خلال 5 دقايق، قبل 9:20</b>. أي رفع متأخر مش هيتقبل.</li>
+        <li><b>الـ PDF لازم يكون:</b> ملف واحد أقل من 10 ميجا (سكان، مش صور عادية)، واضح ومفيش حاجة مقطوعة، واسمه هو إيميلك، مثلاً <span class="math">ali.hassan@gmail.com.pdf</span>.</li>
+        <li>من غير <b>الكود والـ PDF الاتنين</b> محاولتك مش هتتحسب. ولو الإجابات اللي كتبتها في الكويز مختلفة عن الحل على الورق ممكن تتخصم درجات.</li>
+      </ol>
+    </div>
+    <div class="row">
+      <div class="field"><label for="sName">Full name</label><input type="text" id="sName" autocomplete="name"></div>
+      <div class="field"><label for="sEmail">Email</label><input type="email" id="sEmail" autocomplete="email" placeholder="name@example.com"></div>
+    </div>
+    <p id="startErr" class="bad small" hidden></p>
+    <p id="gate" class="small" aria-live="polite"></p>
+    <div class="row"><button type="button" id="btnStart">Start quiz</button></div>
+  </section>
+
+  <div id="timerBar" class="timer" hidden>
+    <span><b id="whoLine"></b></span>
+    <span class="clock" id="clock">15:00</span>
+  </div>
+
+  <form id="quiz" class="field" style="gap:18px" hidden></form>
+
+  <section id="done" class="panel" hidden>
+    <h2>Submitted</h2>
+    <p id="closedNote" class="bad" hidden>This quiz ended because the page was closed or refreshed. The answers you had typed were submitted.</p>
+    <p><b>Next step (<span id="uploadBy">within 5 minutes, by 9:20 pm Cairo time</span>):</b> copy this code, then upload it together with your written working as one PDF<span id="formHint"> in the form your TA shared</span>. Your score is emailed to you after your TA checks it.</p>
+    <p class="ar small" dir="rtl" lang="ar" style="margin-top:0;border-top:0;padding-top:0"><b>الخطوة الجاية (خلال 5 دقايق، قبل 9:20):</b> انسخ الكود ده، وارفعه مع ملف الـ PDF بتاع حلك في الفورم.</p>
+    <div class="field" style="gap:6px">
+      <b>Your PDF must:</b>
+      <ul class="rules small">
+        <li>Be <b>one PDF file</b> with all your pages, under 10 MB. Scan with Google Drive (+ → Scan), Adobe Scan or CamScanner. Plain photos are not accepted.</li>
+        <li>Show your <b>full name and email</b> written at the top of the first page.</li>
+        <li>Label each answer <b>Q1, Q2, Q3, Q4, Q5</b>, with the sketches and steps you used, not only the final numbers.</li>
+        <li>Be readable: dark pen, good light, whole page in the frame, nothing cut off or blurry.</li>
+        <li>Be named with your email, for example <span class="math">ali.hassan@gmail.com.pdf</span>.</li>
+      </ul>
+      <p class="hint">Answers typed in the quiz that do not match your written working may lose marks.</p>
+    </div>
+    <div class="code" id="codeBox"></div>
+    <div class="row"><button type="button" id="btnCopyCode">Copy code</button><a id="formLink" class="btnlink" href="#" target="_blank" rel="noopener" hidden>Open the upload form</a><span id="copyCodeMsg" class="hint"></span></div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+const QUIZ_SALT = "SS-L1-quiz-2026c";
+const DURATION = 15 * 60;
+const IGNORE_WINDOW = false;                       // true only in the TA's private grader copy
+const QUIZ_OPEN  = Date.UTC(2026, 10, 2, 19, 0, 0); // Mon 2 Nov 2026, 9:00 pm Cairo (UTC+2)
+const QUIZ_CLOSE = QUIZ_OPEN + DURATION * 1000;     // 9:15 pm
+let clockOffset = 0;                               // server time minus device time
+function now(){ return Date.now() + clockOffset; }
+async function syncClock(){ try{ const t0=Date.now(); const r=await fetch(location.href.split("#")[0], {method:"HEAD", cache:"no-store"});
+  const d=r.headers.get("date"); const t1=Date.now(); if(d){ const sv=Date.parse(d); if(!isNaN(sv)) clockOffset = sv + (t1-t0)/2 - t1; } }catch(e){} }
+const STORE_KEY = "ss_l1_quiz_v4";
+const FORM_URL = "https://forms.gle/zRZ2tkeChPXik2AUA"; // link to the upload form (code + photo)
+const $ = id => document.getElementById(id);
+
+/* ---------------- seeded randomness ---------------- */
+function hash(str){ let h1=0xdeadbeef^0, h2=0x41c6ce57^0;
+  for(let i=0;i<str.length;i++){const ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}
+  h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);
+  h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
+  return 4294967296*(2097151&h2)+(h1>>>0); }
+function rngFor(id, tag){ let a = hash(QUIZ_SALT+"|"+id+"|"+tag) % 4294967296;
+  return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const pick = (r, arr) => arr[Math.floor(r()*arr.length)];
+
+/* ---------------- numbers ---------------- */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}
+function frac(x){ if(Math.abs(x-Math.round(x))<1e-9) return String(Math.round(x)).replace("-","−");
+  for(let d=2;d<=36;d++){const n=Math.round(x*d); if(Math.abs(n/d-x)<1e-9){const g=gcd(n,d);return (n<0?"−":"")+Math.abs(n/g)+"/"+(d/g);}}
+  return x.toFixed(3); }
+function fracPi(x){ // x = k*pi -> "k·π"
+  const k=x/Math.PI; if(Math.abs(k)<1e-12) return "0"; const f=frac(k);
+  if(f==="1") return "π"; if(f==="−1") return "−π";
+  if(f.includes("/")){const [n,dn]=f.split("/");return (n==="1"?"π":n==="−1"?"−π":n+"π")+"/"+dn;}
+  return f+"π"; }
+function parseAns(s){ // numbers, + - * / ( ), pi / π, implicit multiplication
+  if(s==null) return NaN; s=String(s).trim().toLowerCase().replace(/−/g,"-").replace(/π/g,"pi").replace(/\s+/g,"").replace(/,/g,".");
+  if(!s) return NaN;
+  const toks=[]; let i=0;
+  while(i<s.length){ const c=s[i];
+    if(/[0-9.]/.test(c)){let j=i;while(j<s.length&&/[0-9.]/.test(s[j]))j++;const v=parseFloat(s.slice(i,j));if(isNaN(v))return NaN;toks.push({t:"n",v});i=j;}
+    else if(s.startsWith("pi",i)){toks.push({t:"n",v:Math.PI});i+=2;}
+    else if("+-*/()".includes(c)){toks.push({t:c});i++;}
+    else return NaN; }
+  const t2=[]; // implicit *
+  for(let k=0;k<toks.length;k++){ const a=toks[k]; if(k>0){const p=toks[k-1]; if((p.t==="n"||p.t===")")&&(a.t==="n"||a.t==="(")) t2.push({t:"*"});} t2.push(a); }
+  let p=0;
+  function expr(){let v=term();while(p<t2.length&&(t2[p].t==="+"||t2[p].t==="-")){const o=t2[p++].t;const w=term();v=o==="+"?v+w:v-w;}return v;}
+  function term(){let v=unary();while(p<t2.length&&(t2[p].t==="*"||t2[p].t==="/")){const o=t2[p++].t;const w=unary();v=o==="*"?v*w:v/w;}return v;}
+  function unary(){if(p<t2.length&&t2[p].t==="-"){p++;return -unary();}if(p<t2.length&&t2[p].t==="+"){p++;return unary();}return atom();}
+  function atom(){const a=t2[p];if(!a)return NaN;if(a.t==="n"){p++;return a.v;}if(a.t==="("){p++;const v=expr();if(!t2[p]||t2[p].t!==")")return NaN;p++;return v;}return NaN;}
+  const v=expr(); return p===t2.length&&isFinite(v)?v:NaN; }
+const same = (a,b) => isFinite(a) && Math.abs(a-b) <= 1e-6 + 2e-3*Math.abs(b);
+
+/* ---------------- tiny SVG plotter ---------------- */
+function svgPlot({xmin,xmax,ymin,ymax,xticks,yticks,draw,xlabel="t",w=520,h=220}){
+  const L=34,R=16,T=14,B=30, X=x=>L+(x-xmin)/(xmax-xmin)*(w-L-R), Y=y=>T+(ymax-y)/(ymax-ymin)*(h-T-B);
+  let s=`<svg class="plot" viewBox="0 0 ${w} ${h}" role="img">`;
+  for(const x of xticks) s+=`<line class="gr" x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${h-B}"/>`;
+  for(const y of yticks) s+=`<line class="gr" x1="${L}" y1="${Y(y)}" x2="${w-R}" y2="${Y(y)}"/>`;
+  s+=`<line class="ax" x1="${L}" y1="${Y(0)}" x2="${w-R}" y2="${Y(0)}"/>`;
+  if(xmin<=0&&xmax>=0) s+=`<line class="ax" x1="${X(0)}" y1="${T}" x2="${X(0)}" y2="${h-B}"/>`;
+  for(const x of xticks) s+=`<text x="${X(x)}" y="${h-B+16}" text-anchor="middle">${frac(x)}</text>`;
+  for(const y of yticks) if(y!==0) s+=`<text x="${L-6}" y="${Y(y)+4}" text-anchor="end">${frac(y)}</text>`;
+  s+=`<text class="lab" x="${w-R}" y="${Y(0)-6}" text-anchor="end">${xlabel}</text>`;
+  s+=draw(X,Y)+`</svg>`; return s; }
+function ctPath(pts,X,Y,cls="sig"){ return `<polyline class="${cls}" points="${pts.map(p=>X(p[0])+","+Y(p[1])).join(" ")}"/>`; }
+function dtStems(vals,X,Y){ let s=""; for(const [n,v] of vals){ s+=`<line class="sig" x1="${X(n)}" y1="${Y(0)}" x2="${X(n)}" y2="${Y(v)}"/><circle class="dot" cx="${X(n)}" cy="${Y(v)}" r="4.2"/>`;
+  if(v!==0) s+=`<text class="lab" x="${X(n)+7}" y="${Y(v)+(v>0?-4:14)}">${frac(v)}</text>`; } return s; }
+
+/* ---------------- question generators ---------------- */
+function argStr(a,b,v){ // a*v + b
+  let c = a===1?v : a===-1?"−"+v : a===0.5? v+"/2" : a===-0.5? "−"+v+"/2" : frac(a)+v;
+  if(b===0) return c; return c+(b>0?" + ":" − ")+frac(Math.abs(b)); }
+
+function genQ1(id){ const r=rngFor(id,"h1");
+  const L1=2, W=pick(r,[1,2]), L2=L1+W, H=pick(r,[2,4]);
+  const a=pick(r,[2,-2,0.5,-0.5]), b=pick(r,[-3,-2,-1,1,2,3]), A=pick(r,[2,-1,-2,3]);
+  const T=tau=>(tau-b)/a, t0=T(0), tE=T(L2);
+  const tRamp=T(1), tFlat=T(L1+W/2);
+  const pts=[[-1,0],[0,0],[L1,H],[L2,H],[L2,0],[L2+1,0]];
+  const words=`x(t) is 0 for t < 0, rises in a straight line from 0 at t = 0 to ${H} at t = ${L1}, stays at ${H} until t = ${L2}, then drops to 0 and stays 0.`;
+  const Astr = A===1?"":A===-1?"−":frac(A);
+  return { id:"q1", title:"Combined operations on x(t)", marks:1, words, op:`y(t) = ${Astr}x(${argStr(a,b,"t")})`,
+    plot: svgPlot({xmin:-1,xmax:L2+1,ymin:-0.5,ymax:H+0.8,xticks:[...Array(L2+3).keys()].map(k=>k-1),yticks:[0,H],
+      draw:(X,Y)=>ctPath(pts,X,Y)}),
+    blanks:[
+      {label:"y(t) is non-zero from t =", ans:Math.min(t0,tE)},
+      {label:"… to t =", ans:Math.max(t0,tE)},
+      {label:"the jump of y(t) is at t =", ans:tE},
+      {label:`y(${frac(tRamp)}) =`, ans:A*H/2},
+      {label:`y(${frac(tFlat)}) =`, ans:A*H}],
+    prompt:`Sketch y(t) on paper step by step (shift, then scale/reverse, then amplitude), then fill in:` }; }
+
+function genQ2(id){ const r=rngFor(id,"q2");
+  const x={}; for(let n=-1;n<=3;n++) x[n]=pick(r,[-3,-2,-1,1,2,3]);
+  const kind=pick(r,["shift","revshift","rev","dec"]); let opStr, f;
+  if(kind==="shift"){const k=pick(r,[-2,-1,1,2]); opStr=`x[n ${k>0?"−":"+"} ${Math.abs(k)}]`; f=n=>x[n-k]??0;}
+  else if(kind==="revshift"){const k=pick(r,[1,2,3,-1]); opStr=k>0?`x[${k} − n]`:`x[−n − ${-k}]`; f=n=>x[k-n]??0;}
+  else if(kind==="rev"){opStr="x[−n]"; f=n=>x[-n]??0;}
+  else {opStr="x[2n]"; f=n=>x[2*n]??0;}
+  let sup=[]; for(let n=-8;n<=8;n++) if(f(n)!==0) sup.push(n);
+  let lo=sup.length?Math.min(...sup):0, hi=sup.length?Math.max(...sup):0; while(hi-lo<5){ if((hi-lo)%2===0) lo--; else hi++; }
+  const ns=[]; for(let n=lo;n<=hi;n++) ns.push(n);
+  return { id:"q2", title:"Operations on x[n]", marks:1, words:`x[n] is shown below (all samples not shown are 0).`, op:`y[n] = ${opStr}`,
+    plot: svgPlot({xmin:-3.5,xmax:5.5,ymin:-3.8,ymax:3.8,xticks:[-3,-2,-1,0,1,2,3,4,5],yticks:[0],xlabel:"n",
+      draw:(X,Y)=>dtStems(Object.entries(x).map(([n,v])=>[+n,v]),X,Y)+[-3,-2,4,5].map(n=>`<circle class="dot" cx="${X(n)}" cy="${Y(0)}" r="3"/>`).join("")}),
+    cells: ns.map(n=>({n, ans:f(n)})), prompt:`Fill in y[n] for each n (write 0 where y[n] is zero):` }; }
+
+function genQ3(id){ const r=rngFor(id,"q3");
+  const A1=pick(r,[1,2,3]), p1=pick(r,[-3,-2,-1]), p2=pick(r,[0,1]);
+  const q1=Math.max(p1+pick(r,[3,4,5]), p2+2);
+  const A2=pick(r,[1,2,-1]), q2=q1+pick(r,[1,2]);
+  const ops=[["x₁(t) + x₂(t)",(u,v)=>u+v],["x₁(t) − x₂(t)",(u,v)=>u-v],["x₁(t) · x₂(t)",(u,v)=>u*v],["2x₁(t) − x₂(t)",(u,v)=>2*u-v],["x₁(t) + 2x₂(t)",(u,v)=>u+2*v]];
+  const [opS,opF]=pick(r,ops);
+  const x1=t=>(t>p1&&t<q1)?A1:0, x2=t=>(t>p2&&t<q2)?A2:0;
+  const tOnly1=p1+0.5, tBoth=(Math.max(p1,p2)+Math.min(q1,q2))/2, tOnly2=q1+0.5;
+  const ts=[tOnly1,tBoth,tOnly2].map(t=>Math.round(t*2)/2);
+  const lo=Math.min(p1,p2)-1, hi=Math.max(q1,q2)+1, ymax=Math.max(A1,A2,1)+0.8, ymin=Math.min(0,A2)-0.8;
+  const tk=[]; for(let t=lo;t<=hi;t++) tk.push(t);
+  return { id:"q3", title:"Amplitude operations", marks:1,
+    words:`x₁(t) = ${A1} for ${frac(p1)} < t < ${q1} (0 elsewhere, solid line). x₂(t) = ${frac(A2)} for ${p2} < t < ${q2} (0 elsewhere, orange line).`,
+    op:`y(t) = ${opS}`,
+    plot: svgPlot({xmin:lo,xmax:hi,ymin:ymin,ymax:ymax,xticks:tk,yticks:[0,A1,A2].filter((v,i,a)=>a.indexOf(v)===i),
+      draw:(X,Y)=>ctPath([[lo,0],[p1,0],[p1,A1],[q1,A1],[q1,0],[hi,0]],X,Y)+ctPath([[lo,0],[p2,0],[p2,A2],[q2,A2],[q2,0],[hi,0]],X,Y,"sig2")}),
+    blanks: ts.map(t=>({label:`y(${frac(t)}) =`, ans:opF(x1(t),x2(t))})), prompt:`Find:` }; }
+
+function genQ4(id){ const r=rngFor(id,"q4");
+  const opts=[[2,"2"],[3,"3"],[4,"4"],[6,"6"],[Math.PI/2,"π/2"],[Math.PI/3,"π/3"],[2*Math.PI/3,"2π/3"],[Math.PI/4,"π/4"],[3*Math.PI/4,"3π/4"],[2*Math.PI/5,"2π/5"],[4*Math.PI,"4π"]];
+  const [w,wS]=pick(r,opts), A=pick(r,[2,3,5]), fn=pick(r,["cos","sin"]), ph=pick(r,["π/4","π/3","π/6","−π/2"]);
+  const sig=`x(t) = ${A} ${fn}(${wS==="1"?"":wS}t ${ph.startsWith("−")?"− "+ph.slice(1):"+ "+ph})`;
+  return { id:"q4", title:"Periodic signal", marks:1, words:sig, op:"", plot:"",
+    blanks:[{label:"ω₀ (rad/s) =", ans:w},{label:"fundamental period T₀ =", ans:2*Math.PI/w}],
+    prompt:`This signal is periodic. Find:`, piAnswers:true }; }
+
+function genQ5(id){ const r=rngFor(id,"h2");
+  const x={}; for(let n=-1;n<=2;n++) x[n]=pick(r,[-3,-2,-1,1,2,3]);
+  const k=pick(r,[1,-1,2]), kind=pick(r,["even","odd"]);
+  const g=n=>x[n-k]??0;
+  const ns=[]; for(let n=-4;n<=4;n++) ns.push(n);
+  const ans=n=> kind==="even" ? (g(n)+g(-n))/2 : (g(n)-g(-n))/2;
+  const gS = `x[n ${k>0?"−":"+"} ${Math.abs(k)}]`;
+  return { id:"q5", title:"Shift, then even/odd part of x[n]", marks:1,
+    words:`x[n] is shown below (0 outside −1 ≤ n ≤ 2). Let g[n] = ${gS}.`,
+    op: kind==="even" ? `y[n] = Ev{g[n]} = ½(g[n] + g[−n])` : `y[n] = Od{g[n]} = ½(g[n] − g[−n])`,
+    plot: svgPlot({xmin:-3.5,xmax:4.5,ymin:-3.8,ymax:3.8,xticks:[-3,-2,-1,0,1,2,3,4],yticks:[0],xlabel:"n",
+      draw:(X,Y)=>dtStems(Object.entries(x).map(([n,v])=>[+n,v]),X,Y)+[-3,-2,3,4].map(n=>`<circle class="dot" cx="${X(n)}" cy="${Y(0)}" r="3"/>`).join("")}),
+    cells: ns.map(n=>({n, ans:ans(n)})), prompt:`Fill in y[n] for each n (fractions allowed, e.g. −3/2; write 0 where y[n] is zero):` }; }
+
+function buildQuiz(id){ return [genQ1(id),genQ2(id),genQ3(id),genQ4(id),genQ5(id)]; }
+function slots(q){ return q.cells ? q.cells.map(c=>c.ans) : q.blanks.map(b=>b.ans); }
+
+/* ---------------- grading ---------------- */
+function grade(id, answers){ const qs=buildQuiz(id); let total=0; const per=[];
+  qs.forEach((q,qi)=>{ const key=slots(q), got=answers[qi]||[]; let ok=0;
+    key.forEach((v,j)=>{ if(same(parseAns(got[j]),v)) ok++; });
+    const m=Math.round(q.marks*ok/key.length*4)/4; per.push(m); total+=m; });
+  return {total:Math.round(total*100)/100, per}; }
+
+/* ---------------- rendering ---------------- */
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function renderQ(q, qi, mode, answers){ // mode: "take" | "key"
+  const piRat = v => { const k=v/Math.PI; for(let d=1;d<=36;d++) if(Math.abs(k*d-Math.round(k*d))<1e-9) return true; return false; };
+  const show = v => q.piAnswers && piRat(v) && Math.abs(v - Math.round(v)) > 1e-9 ? `${fracPi(v)}  (≈ ${v.toFixed(3)})` : frac(v);
+  let h=`<section class="panel"><div class="qhead"><h2><span class="qnum">Q${qi+1}</span> ${esc(q.title)}</h2><span class="marks">${q.marks} mark${q.marks===1?"":"s"}</span></div>`;
+  h+=`<p>${esc(q.words)}</p>`; if(q.plot) h+=q.plot; if(q.op) h+=`<p class="math" style="font-size:1.05rem">${esc(q.op)}</p>`;
+  h+=`<p class="muted small">${esc(q.prompt)}</p>`;
+  if(q.cells){ h+=`<div class="cells"><table><tr><th>n</th>${q.cells.map(c=>`<th>${frac(c.n)}</th>`).join("")}</tr><tr><th>y[n]</th>`;
+    q.cells.forEach((c,j)=>{ h+= mode==="key" ? `<td class="key">${frac(c.ans)}</td>` : `<td><input type="text" id="a_${qi}_${j}" aria-label="y[${c.n}]" autocomplete="off" value="${esc((answers?.[qi]?.[j])??"")}"></td>`; });
+    h+=`</tr></table></div>`; }
+  else { h+=`<div class="blanks">`; q.blanks.forEach((b,j)=>{ h+=`<div class="blank"><span>${esc(b.label)}</span>`+
+      (mode==="key" ? `<span class="key">${show(b.ans)}</span>` : `<input type="text" id="a_${qi}_${j}" autocomplete="off" value="${esc((answers?.[qi]?.[j])??"")}">`)+`</div>`; });
+    h+=`</div>`; }
+  return h+`</section>`; }
+
+/* ---------------- submission code ---------------- */
+function b64e(str){ return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+function b64d(s){ s=s.replace(/-/g,"+").replace(/_/g,"/"); while(s.length%4) s+="="; return decodeURIComponent(escape(atob(s))); }
+function makeCode(rec){ const body=b64e(JSON.stringify(rec)); const chk=(hash(QUIZ_SALT+body)%1679616).toString(36).padStart(4,"0"); return "SS1-"+body+"-"+chk; }
+function readCode(code){ code=code.trim(); const m=code.match(/^SS1-([A-Za-z0-9_-]+)-([0-9a-z]{4})$/); if(!m) return null;
+  const valid=(hash(QUIZ_SALT+m[1])%1679616).toString(36).padStart(4,"0")===m[2];
+  try{ return {rec:JSON.parse(b64d(m[1])), valid}; }catch(e){ return null; } }
+
+/* ---------------- storage (best-effort) ---------------- */
+function load(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)||"null"); }catch(e){ return null; } }
+function save(s){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }catch(e){} }
+
+/* ---------------- student flow ---------------- */
+let state=null, timerId=null, quizQs=null;
+function collect(){ return quizQs.map((q,qi)=>slots(q).map((_,j)=>{ const el=$(`a_${qi}_${j}`); return el?el.value.trim():""; })); }
+function startAttempt(name,id,resume){
+  quizQs=buildQuiz(id);
+  if(!resume){ const prev=load(); const attempt = prev && prev.id===id ? (prev.attempt||1)+1 : 1;
+    state={name,id,start:now(),answers:[],tabs:0,attempt,submitted:false}; save(state); }
+  $("start").hidden=true; $("timerBar").hidden=false; $("quiz").hidden=false;
+  $("whoLine").textContent=`${state.name} · ${state.id}`;
+  $("quiz").innerHTML = quizQs.map((q,qi)=>renderQ(q,qi,"take",state.answers)).join("") +
+    `<div class="row"><button type="submit" id="btnSubmit">Submit answers</button><span class="hint">You can change answers until you submit.</span></div>`;
+  $("quiz").addEventListener("input",()=>{ state.answers=collect(); save(state); });
+  tick(); timerId=setInterval(tick,1000);
+}
+function tick(){ const left=Math.max(0, IGNORE_WINDOW ? DURATION-Math.floor((now()-state.start)/1000) : Math.floor((QUIZ_CLOSE-now())/1000));
+  const c=$("clock"); c.textContent=String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0"); c.classList.toggle("low",left<=120);
+  if(left<=0) submit(true); }
+function submit(auto){ if(!state||state.submitted) return; clearInterval(timerId);
+  state.answers=collect(); state.end=now(); state.submitted=true; state.auto=!!auto; save(state);
+  const rec={v:2,id:state.id,nm:state.name,st:state.start,et:state.end,tb:state.tabs,at:state.attempt,au:state.auto?1:0,cl:0,a:state.answers};
+  state.code=makeCode(rec); save(state); showDone(); }
+function showDone(){ $("quiz").hidden=true; $("timerBar").hidden=true; $("start").hidden=true; $("done").hidden=false; $("codeBox").textContent=state.code;
+  $("closedNote").hidden=!state.closed;
+  if(FORM_URL){ const a=$("formLink"); a.href=FORM_URL; a.hidden=false; $("formHint").textContent=" in the form below"; } }
+document.addEventListener("visibilitychange",()=>{ if(document.hidden && state && !state.submitted){ state.tabs++; save(state); } });
+$("quiz").addEventListener("submit",e=>{ e.preventDefault(); submit(false); });
+$("btnStart").addEventListener("click",()=>{
+  const name=$("sName").value.trim(), id=$("sEmail").value.trim().toLowerCase();
+  const err=$("startErr");
+  if(name.length<3){ err.textContent="Enter your full name."; err.hidden=false; return; }
+  if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/.test(id)){ err.textContent="Enter a valid email, for example name@gmail.com."; err.hidden=false; return; }
+  if(!IGNORE_WINDOW && now() < QUIZ_OPEN){ err.textContent="The quiz has not opened yet. It opens at 9:00 pm."; err.hidden=false; return; }
+  if(!IGNORE_WINDOW && now() >= QUIZ_CLOSE){ err.textContent="The quiz is closed. It ended at 9:15 pm."; err.hidden=false; return; }
+  err.hidden=true; startAttempt(name,id,false); });
+function updateGate(){ const g=$("gate"), b=$("btnStart"); if(!g) return;
+  if(IGNORE_WINDOW){ g.textContent="Practice mode: no time window."; b.disabled=false; return; }
+  const t=now(), fmt=ms=>{ const x=Math.max(0,Math.floor(ms/1000)); const h=Math.floor(x/3600), m=Math.floor(x%3600/60), sec=x%60;
+    return (h? h+"h ":"")+String(m).padStart(h?2:1,"0")+"m "+String(sec).padStart(2,"0")+"s"; };
+  if(t < QUIZ_OPEN){ b.disabled=true; g.innerHTML=`<b>Opens Monday 2 November at 9:00 pm (Cairo time).</b> Starts in ${fmt(QUIZ_OPEN-t)}.`; }
+  else if(t < QUIZ_CLOSE){ b.disabled=false; g.innerHTML=`<b class="ok">Open now.</b> Ends at 9:15 pm for everyone: ${fmt(QUIZ_CLOSE-t)} left.`; }
+  else { b.disabled=true; g.innerHTML=`<b class="bad">The quiz is closed.</b> It ended at 9:15 pm.`; } }
+updateGate(); setInterval(updateGate, 1000); syncClock().then(updateGate);
+if(IGNORE_WINDOW){ const u=$("uploadBy"); if(u) u.textContent="within 5 minutes"; }
+$("btnCopyCode").addEventListener("click",()=>copyText($("codeBox").textContent,$("copyCodeMsg"),$("codeBox")));
+function copyText(text,msgEl,selEl){ navigator.clipboard.writeText(text).then(()=>{msgEl.textContent="Copied.";},()=>{
+  if(selEl){const rg=document.createRange();rg.selectNodeContents(selEl);const sel=getSelection();sel.removeAllRanges();sel.addRange(rg);} msgEl.textContent="Selected. Press Ctrl+C (or long-press → Copy)."; }); }
+
+// reopening the page: a finished attempt shows its code again; an unfinished one is closed and submitted as it was saved
+(function(){ const s=load(); if(!s) return; state=s;
+  if(s.submitted&&s.code){ showDone(); return; }
+  const last = s.lastSeen || s.start;
+  const end = Math.min(last, IGNORE_WINDOW ? s.start+DURATION*1000 : QUIZ_CLOSE);
+  const rec={v:2,id:s.id,nm:s.name,st:s.start,et:end,tb:s.tabs,at:s.attempt,au:0,cl:1,a:s.answers||[]};
+  state.code=makeCode(rec); state.submitted=true; state.closed=true; save(state); showDone(); })();
+setInterval(()=>{ if(state && !state.submitted){ state.lastSeen=now(); save(state); } }, 5000);
+
+
+})();
+</script>
+
+</body>
+</html>
